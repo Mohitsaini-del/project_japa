@@ -28,12 +28,6 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (status === "authenticated") {
-      router.push("/dashboard");
-    }
-  }, [status, router]);
-
   const {
     register,
     handleSubmit,
@@ -41,6 +35,23 @@ export default function Register() {
   } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.push("/dashboard");
+    }
+  }, [status, router]);
+
+  if (status === "loading" || status === "authenticated") {
+    return (
+      <div className="min-h-screen bg-bg-zen flex flex-col items-center justify-center p-4 select-none font-sans">
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-saffron-light text-saffron font-bold text-xl animate-pulse mb-3">
+          ॐ
+        </div>
+        <p className="text-xs text-neutral-450 font-semibold animate-pulse">Loading JapaTrack...</p>
+      </div>
+    );
+  }
 
   const onSubmit = async (data: FormData) => {
     setLoading(true);
