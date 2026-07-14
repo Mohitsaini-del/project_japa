@@ -379,3 +379,95 @@ export async function updateProfileSettingsAction(formData: FormData) {
     return { error: "Database error" };
   }
 }
+
+/**
+ * Fetch calendar counts & statistics for the custom dashboard calendar widget
+ */
+export async function getDashboardCalendarDataAction(year: number, month: number) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { error: "Unauthorized" };
+  }
+
+  const userId = session.user.id;
+
+  try {
+    // 1. Total chants (all time)
+    const totalAggregate = await prisma.dailyProgress.aggregate({
+      where: { userId },
+      _sum: { chantCount: true },
+    });
+    const totalChants = totalAggregate._sum.chantCount ?? 0;
+
+    // 2. Yearly total chants
+    const startOfYear = new Date(Date.UTC(year, 0, 1));
+    const endOfYear = new Date(Date.UTC(year, 11, 31, 23, 59, 59, 999));
+    const yearlyAggregate = await prisma.dailyProgress.aggregate({
+      where: {
+        userId,
+        date: {
+          gte: startOfYear,
+          lte: endOfYear,
+        },
+      },
+      _sum: { chantCount: true },
+    });
+    const yearlyTotal = yearlyAggregate._sum.chantCount ?? 0;
+
+    // 3. Monthly total chants
+    const startOfMonth = new Date(Date.UTC(year, month - 1, 1));
+    const endOfMonth = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
+    const monthlyAggregate = await prisma.dailyProgress.aggregate({
+      where: {
+        userId,
+        date: {
+          gte: startOfMonth,
+          lte: endOfMonth,
+        },
+      },
+      _sum: { chantCount: true },
+    });
+    const monthlyTotal = monthlyAggregate._sum.chantCount ?? 0;
+
+    // 4. Daily progress records for the selected month to build the grid
+    const monthlyProgress = await prisma.dailyProgress.findMany({
+      where: {
+        userId,
+        date: {
+          gte: startOfMonth,
+          lte: endOfMonth,
+        },
+      },
+      select: {
+        date: true,
+        chantCount: true,
+        goal: true,
+        completed: true,
+      },
+    });
+
+    // Map progress list to dynamic dictionary of day -> info
+    const progressMap: Record<number, { count: number; goal: number; completed: boolean }> = {};
+    monthlyProgress.forEach((p) => {
+      const day = p.date.getUTCDate();
+      progressMap[day] = {
+        count: p.chantCount,
+        goal: p.goal,
+        completed: p.completed,
+      };
+    });
+
+    return {
+      success: true,
+      data: {
+        totalChants,
+        yearlyTotal,
+        monthlyTotal,
+        progressMap,
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching dashboard calendar data:", error);
+    return { error: "Database error" };
+  }
+}

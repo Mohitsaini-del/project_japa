@@ -81,6 +81,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async session({ session, token }) {
       if (token && session.user) {
+        // Verify user exists in the database to prevent infinite redirect loops for stale/deleted users
+        try {
+          const userExists = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: { id: true },
+          });
+
+          if (!userExists) {
+            return {
+              ...session,
+              user: undefined as any,
+            };
+          }
+        } catch (error) {
+          console.error("Error verifying user in session callback:", error);
+        }
+
         const customUser = session.user as CustomUser;
         customUser.id = token.id as string;
         customUser.trackingMode = token.trackingMode as string;

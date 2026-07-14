@@ -23,7 +23,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Main Content Area */}
       <div className="flex flex-col lg:pl-64 min-h-screen">
         {/* Top Navbar */}
-        <Navbar />
+        {pathname !== "/dashboard" && <Navbar />}
 
         {/* Dynamic Page Content */}
         <main className="flex-1 p-4 md:p-6 pb-24 lg:pb-8 max-w-7xl w-full mx-auto">

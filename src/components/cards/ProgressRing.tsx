@@ -53,12 +53,12 @@ export default function ProgressRing({
       {/* Central Label */}
       <div className="absolute flex flex-col items-center justify-center text-center">
         {centerText && (
-          <span className="text-3xl font-extrabold text-neutral-800 tracking-tight leading-none">
+          <span className={`${size < 120 ? "text-base" : "text-3xl"} font-extrabold text-neutral-800 tracking-tight leading-none`}>
             {centerText}
           </span>
         )}
         {subText && (
-          <span className="text-[10px] text-neutral-400 font-semibold uppercase tracking-widest mt-1.5 leading-none">
+          <span className={`${size < 120 ? "text-[8px] mt-0.5 tracking-wider font-bold" : "text-[10px] mt-1.5 tracking-widest font-semibold"} text-neutral-400 uppercase leading-none`}>
             {subText}
           </span>
         )}
