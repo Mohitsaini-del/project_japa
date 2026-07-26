@@ -186,7 +186,7 @@ export default function DashboardContent({
       });
       return;
     }
-    handleUpdateChants(val, "set");
+    handleUpdateChants(val, "increment");
     setManualInputValue("");
   };
 
@@ -394,12 +394,12 @@ export default function DashboardContent({
               <form onSubmit={handleManualSubmit} className="flex flex-col gap-2.5">
                 <div>
                   <label className="text-[9px] font-bold text-neutral-400 uppercase tracking-wider block mb-1">
-                    Custom Entry
+                    Custom Add (+)
                   </label>
                   <Input
                     type="number"
-                    min="0"
-                    placeholder="Enter total names..."
+                    min="1"
+                    placeholder="Enter chants to add..."
                     value={manualInputValue}
                     onChange={(e) => setManualInputValue(e.target.value)}
                     className="py-2 rounded-xl text-[11px] border border-neutral-200 focus:border-saffron focus:ring-1 focus:ring-saffron"
@@ -410,7 +410,7 @@ export default function DashboardContent({
                   variant="primary" 
                   className="w-full rounded-xl py-2 text-[11px] font-bold bg-saffron hover:bg-saffron-dark text-white cursor-pointer transition-colors shadow-sm active:scale-95"
                 >
-                  Save Progress
+                  + Add Chants to Today
                 </Button>
               </form>
             )}
