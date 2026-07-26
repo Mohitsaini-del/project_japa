@@ -24,7 +24,7 @@ export default async function ProfilePage() {
   });
 
   if (!user) {
-    redirect("/login");
+    redirect("/api/auth/signout?redirectTo=/login");
   }
 
   return (

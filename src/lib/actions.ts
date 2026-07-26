@@ -202,7 +202,6 @@ export async function updateChantCountAction(
 
     revalidatePath("/dashboard");
     revalidatePath("/counter");
-    revalidatePath("/history");
     revalidatePath("/statistics");
 
     return { success: true, count: newCount };
@@ -292,7 +291,6 @@ export async function saveFocusSessionAction(data: {
 
     revalidatePath("/dashboard");
     revalidatePath("/timer");
-    revalidatePath("/history");
     revalidatePath("/statistics");
 
     return { success: true };

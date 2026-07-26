@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useSession, signOut } from "next-auth/react";
 import { 
@@ -14,7 +16,18 @@ import {
 } from "lucide-react";
 
 export default function Home() {
+  const router = useRouter();
   const { status } = useSession();
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.replace("/dashboard");
+    }
+  }, [status, router]);
+
+  if (status === "authenticated") {
+    return null;
+  }
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {

@@ -21,7 +21,7 @@ export default async function StatisticsPage() {
   });
 
   if (!user) {
-    redirect("/login");
+    redirect("/api/auth/signout?redirectTo=/login");
   }
 
   // Fetch all progress logs

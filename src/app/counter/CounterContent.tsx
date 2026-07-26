@@ -43,7 +43,6 @@ export default function CounterContent({
         clearTimeout(saveTimeoutRef.current);
         const finalCount = latestCountRef.current;
         if (finalCount !== initialCount) {
-          // Fire a fire-and-forget save on unmount if count changed
           const todayStr = new Date().toISOString().split("T")[0];
           updateChantCountAction(todayStr, finalCount, "set");
         }
@@ -73,7 +72,7 @@ export default function CounterContent({
       } catch (err) {
         console.error("Save error:", err);
       }
-    }, 1200); // Wait 1.2s of inactivity before saving
+    }, 1000);
   };
 
   const handleIncrement = () => {
@@ -82,9 +81,9 @@ export default function CounterContent({
     setAnimateKey((prev) => prev + 1);
     triggerDebouncedSave(nextCount);
 
-    // Audio click or haptic feedback simulation
+    // Haptic feedback simulation
     if (typeof window !== "undefined" && "vibrate" in navigator) {
-      navigator.vibrate(12); // Short vibration
+      navigator.vibrate(12);
     }
   };
 
@@ -113,9 +112,36 @@ export default function CounterContent({
     }
   };
 
+  // Keyboard Shortcuts (Space, Enter, ArrowUp to increment, ArrowDown to decrement)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const targetTag = (e.target as HTMLElement)?.tagName;
+      if (["INPUT", "TEXTAREA", "BUTTON"].includes(targetTag)) {
+        if (targetTag === "BUTTON" && (e.code === "Space" || e.code === "Enter")) {
+          return; // Let standard button click handle it if button focused
+        }
+      }
+      if (e.code === "Space" || e.code === "Enter" || e.code === "ArrowUp") {
+        e.preventDefault();
+        handleIncrement();
+      } else if (e.code === "ArrowDown" || e.code === "Minus") {
+        e.preventDefault();
+        handleDecrement();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [count]);
+
   const rounds = Math.floor(count / 108);
   const currentBead = count % 108;
   const progressPercent = goal > 0 ? (count / goal) * 100 : 0;
+
+  // SVG Progress Ring Parameters (viewBox: 0 0 320 320)
+  const radius = 145;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference * (1 - Math.min(progressPercent, 100) / 100);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] max-w-lg mx-auto py-4 px-4 font-sans select-none">
@@ -131,57 +157,59 @@ export default function CounterContent({
           {preferredMantra || "Naam Japa Meditation"}
         </h1>
         <p className="text-xs text-neutral-400 font-semibold mt-1">
-          Each round is 108 chants. Goal is {goal} ({Math.round(goal / 108)} rounds)
+          Each round is 108 chants. Goal is {goal} ({Math.round(goal / 108)} {Math.round(goal / 108) === 1 ? "round" : "rounds"})
         </p>
       </div>
 
-      {/* Main Large Counter Screen */}
-      <div className="relative w-full aspect-square max-w-[340px] rounded-full bg-white border border-neutral-100/70 shadow-xl shadow-neutral-200/40 flex flex-col items-center justify-center mb-8">
-        
+      {/* Main Large Counter Screen (Clickable Anywhere) */}
+      <motion.button
+        whileTap={{ scale: 0.97 }}
+        onClick={handleIncrement}
+        className="relative w-full aspect-square max-w-[340px] rounded-full bg-white border border-neutral-100/70 shadow-xl shadow-neutral-200/40 flex flex-col items-center justify-center mb-6 cursor-pointer select-none focus:outline-none focus:ring-4 focus:ring-saffron/20 transition-all group"
+        title="Tap anywhere inside circle to chant (or press Spacebar)"
+      >
         {/* Progress Halo Ring */}
-        <svg className="absolute inset-0 w-full h-full transform -rotate-95 pointer-events-none p-1">
+        <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none p-2" viewBox="0 0 320 320">
           <circle
-            cx="50%"
-            cy="50%"
-            r="48%"
+            cx="160"
+            cy="160"
+            r={radius}
             fill="transparent"
             stroke="#FAF8F2"
-            strokeWidth="6"
+            strokeWidth="8"
           />
           <motion.circle
-            cx="50%"
-            cy="50%"
-            r="48%"
+            cx="160"
+            cy="160"
+            r={radius}
             fill="transparent"
             stroke="#E89B2D"
-            strokeWidth="6"
+            strokeWidth="8"
             strokeLinecap="round"
-            strokeDasharray={`${2 * Math.PI * 155}`}
-            initial={{ strokeDashoffset: `${2 * Math.PI * 155}` }}
-            animate={{
-              strokeDashoffset: `${2 * Math.PI * 155 * (1 - Math.min(progressPercent, 100) / 100)}`
-            }}
-            transition={{ type: "spring", stiffness: 100, damping: 20 }}
+            strokeDasharray={circumference}
+            initial={{ strokeDashoffset: circumference }}
+            animate={{ strokeDashoffset }}
+            transition={{ type: "spring", stiffness: 120, damping: 22 }}
           />
         </svg>
 
         {/* Counter Number Display */}
         <div className="flex flex-col items-center z-10">
-          <AnimatePresence mode="popLayout">
-            <motion.span
-              key={animateKey}
-              initial={{ opacity: 0.7, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0.7, scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 500, damping: 20 }}
-              className="text-6xl font-black text-neutral-850 tracking-tighter"
-            >
-              {count}
-            </motion.span>
-          </AnimatePresence>
+          <motion.span
+            key={animateKey}
+            initial={{ scale: 1.18 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", stiffness: 600, damping: 25 }}
+            className="text-6xl font-black text-neutral-850 tracking-tighter select-none"
+          >
+            {count}
+          </motion.span>
 
-          <span className="text-xs text-neutral-400 font-bold uppercase tracking-widest mt-2">
+          <span className="text-xs text-neutral-400 font-bold uppercase tracking-widest mt-2 group-hover:text-saffron transition-colors">
             Total Chants
+          </span>
+          <span className="text-[10px] text-neutral-300 font-medium tracking-tight mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+            (Tap to count)
           </span>
         </div>
 
@@ -197,27 +225,28 @@ export default function CounterContent({
             <p className="text-[9px] text-neutral-400 font-semibold uppercase tracking-wider mt-1">Beads</p>
           </div>
         </div>
-      </div>
+      </motion.button>
 
       {/* Primary Tapping Action Area */}
-      <div className="flex flex-col items-center gap-6 w-full">
+      <div className="flex flex-col items-center gap-5 w-full">
         {/* Large Increment Button */}
         <motion.button
-          whileTap={{ scale: 0.96 }}
+          whileTap={{ scale: 0.95 }}
           onClick={handleIncrement}
-          className="h-28 w-28 rounded-full bg-saffron text-white shadow-lg shadow-saffron/25 flex items-center justify-center cursor-pointer select-none focus:outline-none"
+          className="h-24 w-24 rounded-full bg-saffron text-white shadow-lg shadow-saffron/25 flex items-center justify-center cursor-pointer select-none focus:outline-none hover:bg-saffron/90 transition-colors"
+          title="Tap + to count"
         >
-          <Plus className="h-10 w-10 stroke-[2.5]" />
+          <Plus className="h-9 w-9 stroke-[2.5]" />
         </motion.button>
 
         {/* Auxiliary Controls */}
-        <div className="flex items-center justify-center gap-8 w-full max-w-xs mt-2">
+        <div className="flex items-center justify-center gap-8 w-full max-w-xs mt-1">
           {/* Decrement */}
           <button
             onClick={handleDecrement}
             disabled={count === 0}
             className="flex h-11 w-11 items-center justify-center rounded-2xl border border-neutral-200 bg-white text-neutral-500 hover:text-neutral-700 hover:bg-neutral-50 shadow-sm shadow-neutral-100/50 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
-            title="Decrement"
+            title="Decrement (-)"
           >
             <Minus className="h-5 w-5" />
           </button>
@@ -239,16 +268,16 @@ export default function CounterContent({
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mt-6 flex items-center gap-1.5 text-xs font-bold text-success bg-emerald-50 px-4 py-2 rounded-full"
+          className="mt-6 flex items-center gap-1.5 text-xs font-bold text-emerald-600 bg-emerald-50 px-4 py-2 rounded-full border border-emerald-100"
         >
-          <Sparkles className="h-4 w-4 animate-spin-slow" />
-          <span>Daily Chanting Goal Completed!</span>
+          <Sparkles className="h-4 w-4 text-emerald-500" />
+          <span>Daily Chanting Goal Completed! 🎉</span>
         </motion.div>
       )}
 
-      {/* Auto-save helper notice */}
-      <span className="text-[10px] text-neutral-400 font-medium tracking-wide mt-8">
-        Your progress is automatically saved to the database.
+      {/* Auto-save & Keyboard helper notice */}
+      <span className="text-[10px] text-neutral-400 font-medium tracking-wide mt-6">
+        Tap circle, press <kbd className="px-1.5 py-0.5 bg-neutral-100 rounded border border-neutral-200 text-neutral-600 font-mono text-[9px]">Space</kbd>, or click <kbd className="px-1.5 py-0.5 bg-neutral-100 rounded border border-neutral-200 text-neutral-600 font-mono text-[9px]">+</kbd> to count. Progress auto-saves.
       </span>
     </div>
   );

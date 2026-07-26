@@ -216,7 +216,7 @@ export default function ProfileContent({ initialUser }: ProfileContentProps) {
             <Input
               label="Daily Chanting Goal"
               type="number"
-              min="1"
+              min="0"
               error={errors.dailyGoal?.message}
               {...register("dailyGoal", { valueAsNumber: true })}
               helperText="Common targets: 108 chants (1 round), 1728 chants (16 rounds)."

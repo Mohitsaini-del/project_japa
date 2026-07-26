@@ -26,7 +26,7 @@ export default async function DashboardPage() {
   });
 
   if (!user) {
-    redirect("/login");
+    redirect("/api/auth/signout?redirectTo=/login");
   }
 
   // Align dates with UTC midnight

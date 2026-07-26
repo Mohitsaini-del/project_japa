@@ -20,7 +20,7 @@ export default async function TimerPage() {
   });
 
   if (!user) {
-    redirect("/login");
+    redirect("/api/auth/signout?redirectTo=/login");
   }
 
   return (

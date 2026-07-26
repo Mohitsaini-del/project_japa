@@ -6,7 +6,6 @@ import {
   Home, 
   Fingerprint, 
   Timer, 
-  Calendar, 
   BarChart3, 
   User 
 } from "lucide-react";
@@ -16,7 +15,6 @@ const navItems = [
   { href: "/dashboard", icon: Home, label: "Home" },
   { href: "/counter", icon: Fingerprint, label: "Counter" },
   { href: "/timer", icon: Timer, label: "Timer" },
-  { href: "/history", icon: Calendar, label: "History" },
   { href: "/statistics", icon: BarChart3, label: "Stats" },
   { href: "/profile", icon: User, label: "Profile" },
 ];

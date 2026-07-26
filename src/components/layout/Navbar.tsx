@@ -16,8 +16,6 @@ export default function Navbar() {
         return "Chant Counter";
       case "/timer":
         return "Focus Timer";
-      case "/history":
-        return "Chanting History";
       case "/statistics":
         return "Statistics & Insights";
       case "/profile":

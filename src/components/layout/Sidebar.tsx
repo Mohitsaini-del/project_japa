@@ -6,10 +6,8 @@ import { useSession, signOut } from "next-auth/react";
 import { 
   Home, 
   Timer, 
-  Calendar, 
   BarChart3, 
   User, 
-  Settings,
   LogOut 
 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -37,7 +35,7 @@ const LotusIcon = ({ className }: { className?: string }) => (
     <path d="M12 8c-3.5 1-5 3.5-5 5.5 0 1.5 1 2.5 2.5 2.5 2 0 2.5-1 2.5-2" />
     <path d="M12 8c3.5 1 5 3.5 5 5.5 0 1.5-1 2.5-2.5 2.5-2 0-2.5-1-2.5-2" />
     <path d="M7 16c-1.5-1-2.5-2.5-2.5-4 0-2 2.5-4 5-4.5" />
-    <path d="M17 16c1.5-1 2.5-2.5 2.5-4 0-2-2.5-4-5-4.5" />
+    <path d="M17 16c1.5-1 2.5-2.5 2.5-4 0-2 2.5-4 5-4.5" />
   </svg>
 );
 
@@ -45,10 +43,8 @@ const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
   { href: "/counter", label: "Counter", icon: BeadsIcon },
   { href: "/timer", label: "Focus Timer", icon: Timer },
-  { href: "/history", label: "History", icon: Calendar },
   { href: "/statistics", label: "Statistics", icon: BarChart3 },
   { href: "/profile", label: "Profile", icon: User },
-  { href: "/profile#settings", label: "Settings", icon: Settings },
 ];
 
 export default function Sidebar() {
@@ -72,7 +68,7 @@ export default function Sidebar() {
         {/* Navigation Items */}
         <nav className="flex flex-col gap-0.5">
           {navItems.map((item) => {
-            const isActive = pathname === item.href || (item.href.startsWith("/profile") && pathname === "/profile");
+            const isActive = pathname === item.href;
             return (
               <Link key={item.label} href={item.href} className="relative group">
                 <div className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 cursor-pointer ${

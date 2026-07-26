@@ -21,7 +21,7 @@ export default async function CounterPage() {
   });
 
   if (!user) {
-    redirect("/login");
+    redirect("/api/auth/signout?redirectTo=/login");
   }
 
   const todayStr = new Date().toISOString().split("T")[0];

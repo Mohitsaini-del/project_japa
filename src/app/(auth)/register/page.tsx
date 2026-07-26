@@ -38,11 +38,11 @@ export default function Register() {
 
   useEffect(() => {
     if (status === "authenticated") {
-      router.push("/dashboard");
+      router.replace("/dashboard");
     }
   }, [status, router]);
 
-  if (status === "loading" || status === "authenticated") {
+  if (status === "loading") {
     return (
       <div className="min-h-screen bg-bg-zen flex flex-col items-center justify-center p-4 select-none font-sans">
         <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-saffron-light text-saffron font-bold text-xl animate-pulse mb-3">
