@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { 
   Fingerprint, 
   Timer, 
@@ -69,28 +69,12 @@ export default function Home() {
           </nav>
 
           <div className="flex items-center gap-4">
-            {status === "authenticated" ? (
-              <>
-                <Link href="/dashboard" className="text-sm font-semibold text-neutral-650 hover:text-neutral-900 px-3 py-2 transition-colors">
-                  Dashboard
-                </Link>
-                <button
-                  onClick={() => signOut()}
-                  className="bg-neutral-100 text-neutral-650 text-sm font-bold px-4 py-2.5 rounded-xl hover:bg-neutral-200/80 transition-all shadow-sm cursor-pointer"
-                >
-                  Sign Out
-                </button>
-              </>
-            ) : (
-              <>
-                <Link href="/login" className="text-sm font-semibold text-neutral-650 hover:text-neutral-900 px-3 py-2 transition-colors">
-                  Sign In
-                </Link>
-                <Link href="/register" className="bg-saffron text-white text-sm font-bold px-4 py-2.5 rounded-xl hover:bg-saffron/90 transition-all shadow-sm shadow-saffron/15">
-                  Get Started
-                </Link>
-              </>
-            )}
+            <Link href="/login" className="text-sm font-semibold text-neutral-650 hover:text-neutral-900 px-3 py-2 transition-colors">
+              Sign In
+            </Link>
+            <Link href="/register" className="bg-saffron text-white text-sm font-bold px-4 py-2.5 rounded-xl hover:bg-saffron/90 transition-all shadow-sm shadow-saffron/15">
+              Get Started
+            </Link>
           </div>
         </div>
       </header>
@@ -130,22 +114,13 @@ export default function Home() {
           transition={{ delay: 0.3, duration: 0.6 }}
           className="mt-8 flex flex-col sm:flex-row gap-4"
         >
-          {status === "authenticated" ? (
-            <Link href="/dashboard" className="bg-saffron text-white text-base font-bold px-8 py-3.5 rounded-2xl hover:bg-saffron/90 transition-all shadow-md shadow-saffron/20 flex items-center justify-center gap-2">
-              <span>Go to Dashboard</span>
-              <ChevronRight className="h-5 w-5" />
-            </Link>
-          ) : (
-            <>
-              <Link href="/register" className="bg-saffron text-white text-base font-bold px-8 py-3.5 rounded-2xl hover:bg-saffron/90 transition-all shadow-md shadow-saffron/20 flex items-center justify-center gap-2">
-                <span>Begin Your Practice</span>
-                <ChevronRight className="h-5 w-5" />
-              </Link>
-              <Link href="/login" className="bg-white border border-neutral-200 text-neutral-650 text-base font-bold px-8 py-3.5 rounded-2xl hover:bg-neutral-50 hover:text-neutral-800 transition-all flex items-center justify-center">
-                Log In
-              </Link>
-            </>
-          )}
+          <Link href="/register" className="bg-saffron text-white text-base font-bold px-8 py-3.5 rounded-2xl hover:bg-saffron/90 transition-all shadow-md shadow-saffron/20 flex items-center justify-center gap-2">
+            <span>Begin Your Practice</span>
+            <ChevronRight className="h-5 w-5" />
+          </Link>
+          <Link href="/login" className="bg-white border border-neutral-200 text-neutral-650 text-base font-bold px-8 py-3.5 rounded-2xl hover:bg-neutral-50 hover:text-neutral-800 transition-all flex items-center justify-center">
+            Log In
+          </Link>
         </motion.div>
       </section>
 
@@ -322,15 +297,9 @@ export default function Home() {
           <p className="text-sm text-neutral-500 font-medium mt-3 max-w-md leading-relaxed">
             Join other practitioners maintaining quiet consistency and mindful devotion.
           </p>
-          {status === "authenticated" ? (
-            <Link href="/dashboard" className="mt-8 bg-saffron text-white text-sm font-bold px-8 py-3.5 rounded-2xl hover:bg-saffron/90 transition-all shadow-md shadow-saffron/15">
-              Go to Dashboard
-            </Link>
-          ) : (
-            <Link href="/register" className="mt-8 bg-saffron text-white text-sm font-bold px-8 py-3.5 rounded-2xl hover:bg-saffron/90 transition-all shadow-md shadow-saffron/15">
-              Create Free Account
-            </Link>
-          )}
+          <Link href="/register" className="mt-8 bg-saffron text-white text-sm font-bold px-8 py-3.5 rounded-2xl hover:bg-saffron/90 transition-all shadow-md shadow-saffron/15">
+            Create Free Account
+          </Link>
         </div>
       </section>
 
