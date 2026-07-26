@@ -11,32 +11,30 @@ export default async function StatisticsPage() {
 
   const userId = session.user.id;
 
-  // Fetch user streaks
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      currentStreak: true,
-      bestStreak: true,
-    },
-  });
+  // Parallelize database queries for fast statistical computation
+  const [user, progressList, sessions] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        currentStreak: true,
+        bestStreak: true,
+      },
+    }),
+    prisma.dailyProgress.findMany({
+      where: { userId },
+      orderBy: { date: "asc" },
+    }),
+    prisma.focusSession.findMany({
+      where: { userId },
+      select: {
+        duration: true,
+      },
+    }),
+  ]);
 
   if (!user) {
     redirect("/api/auth/signout?redirectTo=/login");
   }
-
-  // Fetch all progress logs
-  const progressList = await prisma.dailyProgress.findMany({
-    where: { userId },
-    orderBy: { date: "asc" },
-  });
-
-  // Fetch all focus sessions
-  const sessions = await prisma.focusSession.findMany({
-    where: { userId },
-    select: {
-      duration: true,
-    },
-  });
 
   // 1. Calculate General Card Metrics
   const totalChants = progressList.reduce((acc, curr) => acc + curr.chantCount, 0);

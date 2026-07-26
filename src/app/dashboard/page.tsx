@@ -11,50 +11,48 @@ export default async function DashboardPage() {
 
   const userId = session.user.id;
 
-  // Fetch current user record
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      name: true,
-      dailyGoal: true,
-      currentStreak: true,
-      bestStreak: true,
-      preferredDeity: true,
-      preferredMantra: true,
-      trackingMode: true,
-    },
-  });
-
-  if (!user) {
-    redirect("/api/auth/signout?redirectTo=/login");
-  }
-
   // Align dates with UTC midnight
   const todayStr = new Date().toISOString().split("T")[0];
   const today = new Date(`${todayStr}T00:00:00Z`);
 
-  // Fetch today's progress
-  const progress = await prisma.dailyProgress.findUnique({
-    where: {
-      userId_date: {
+  // Parallelize database queries for high speed
+  const [user, progress, sessions] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        name: true,
+        dailyGoal: true,
+        currentStreak: true,
+        bestStreak: true,
+        preferredDeity: true,
+        preferredMantra: true,
+        trackingMode: true,
+      },
+    }),
+    prisma.dailyProgress.findUnique({
+      where: {
+        userId_date: {
+          userId,
+          date: today,
+        },
+      },
+    }),
+    prisma.focusSession.findMany({
+      where: {
         userId,
-        date: today,
+        startTime: {
+          gte: today,
+        },
       },
-    },
-  });
+      orderBy: {
+        createdAt: "desc",
+      },
+    }),
+  ]);
 
-  // Fetch today's focus sessions
-  const sessions = await prisma.focusSession.findMany({
-    where: {
-      userId,
-      startTime: {
-        gte: today,
-      },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+  if (!user) {
+    redirect("/api/auth/signout?redirectTo=/login");
+  }
 
   return (
     <DashboardContent
