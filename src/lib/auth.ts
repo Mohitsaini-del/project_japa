@@ -18,6 +18,7 @@ interface CustomUser {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "super-secret-japa-auth-key-2026",
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
   providers: [
