@@ -118,16 +118,19 @@ export default function DashboardContent({
     monthlyTotal: 0,
   });
 
-  // Sync state if props change
+  // Sync state if props change (primitive comparison to avoid unnecessary re-triggers)
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setChantCount(initialProgress?.chantCount ?? 0);
-      setGoal(initialProgress?.goal ?? initialUser.dailyGoal);
-      setFocusMinutes(initialProgress?.focusMinutes ?? 0);
-      setCompleted(initialProgress?.completed ?? false);
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [initialProgress, initialUser.dailyGoal]);
+    setChantCount(initialProgress?.chantCount ?? 0);
+    setGoal(initialProgress?.goal ?? initialUser.dailyGoal);
+    setFocusMinutes(initialProgress?.focusMinutes ?? 0);
+    setCompleted(initialProgress?.completed ?? false);
+  }, [
+    initialProgress?.chantCount,
+    initialProgress?.goal,
+    initialProgress?.focusMinutes,
+    initialProgress?.completed,
+    initialUser.dailyGoal,
+  ]);
 
   const todayStr = new Date().toISOString().split("T")[0];
 
@@ -156,10 +159,12 @@ export default function DashboardContent({
           description: res.error,
           variant: "error",
         });
-      } else {
+      } else if (res?.count !== undefined) {
+        setChantCount(res.count);
+        setCompleted(res.count >= goal);
         toast({
           title: mode === "increment" ? "Progress Saved" : "Chants Updated",
-          description: `Logged ${nextCount} chants for today.`,
+          description: `Logged ${res.count} chants for today.`,
           variant: "success",
         });
         router.refresh();
