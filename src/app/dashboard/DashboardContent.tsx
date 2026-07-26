@@ -137,11 +137,7 @@ export default function DashboardContent({
     if (mode === "increment") {
       nextCount = Math.max(0, chantCount + value);
     } else {
-      if (initialUser.trackingMode === "hybrid") {
-        nextCount = Math.max(chantCount, value);
-      } else {
-        nextCount = value;
-      }
+      nextCount = Math.max(0, value);
     }
 
     const previousCount = chantCount;

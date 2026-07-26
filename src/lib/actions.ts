@@ -167,13 +167,7 @@ export async function updateChantCountAction(
       if (mode === "increment") {
         newCount = Math.max(0, progress.chantCount + value);
       } else {
-        // Mode set (Manual Daily Update - overwrite today's total)
-        // If Hybrid mode, replace if manual is larger, or just overwrite if manual/set is forced
-        if (user.trackingMode === "hybrid") {
-          newCount = Math.max(progress.chantCount, value);
-        } else {
-          newCount = value;
-        }
+        newCount = Math.max(0, value);
       }
 
       await prisma.dailyProgress.update({
