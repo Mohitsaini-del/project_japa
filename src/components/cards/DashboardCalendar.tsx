@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -8,6 +9,7 @@ import {
 } from "lucide-react";
 import { getDashboardCalendarDataAction } from "@/lib/actions";
 import { useToast } from "@/components/ui/Toast";
+import UpdateChantModal from "@/components/cards/UpdateChantModal";
 
 const DAYS_OF_WEEK = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS = [
@@ -35,12 +37,21 @@ interface DashboardCalendarProps {
 }
 
 export default function DashboardCalendar({ onStatsLoaded }: DashboardCalendarProps) {
+  const router = useRouter();
   const { toast } = useToast();
   const today = new Date();
   
   // Selected Year & Month state (month is 1-indexed, 1=Jan, 12=Dec)
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth() + 1);
+
+  // Selected Date Modal state
+  const [selectedDate, setSelectedDate] = useState<{
+    dateStr: string;
+    displayDate: string;
+    count: number;
+    goal: number;
+  } | null>(null);
   
   // Loaded stats and calendar progress map
   const [stats, setStats] = useState<{
@@ -112,6 +123,43 @@ export default function DashboardCalendar({ onStatsLoaded }: DashboardCalendarPr
     }
   };
 
+  // Handle cell click
+  const handleCellClick = (dateIndex: number) => {
+    const cellDate = new Date(year, month - 1, dateIndex);
+    const startOfTomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+
+    if (cellDate >= startOfTomorrow) {
+      toast({
+        title: "Future Date Selected",
+        description: "You cannot update chant counts for future dates.",
+        variant: "error",
+      });
+      return;
+    }
+
+    const monthStr = String(month).padStart(2, "0");
+    const dayStr = String(dateIndex).padStart(2, "0");
+    const dateStr = `${year}-${monthStr}-${dayStr}`;
+
+    const displayDate = cellDate.toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+
+    const dayProgress = stats?.progressMap[dateIndex];
+    const count = dayProgress?.count ?? 0;
+    const goal = dayProgress?.goal ?? 108;
+
+    setSelectedDate({
+      dateStr,
+      displayDate,
+      count,
+      goal,
+    });
+  };
+
   // Grid calculation helpers (using normal local calendar math)
   const daysInMonth = new Date(year, month, 0).getDate();
   const daysInPrevMonth = new Date(year, month - 1, 0).getDate();
@@ -131,7 +179,7 @@ export default function DashboardCalendar({ onStatsLoaded }: DashboardCalendarPr
           </div>
           <div>
             <h3 className="text-sm font-extrabold text-neutral-800 tracking-tight">Daily Progress</h3>
-            <p className="text-[9px] font-bold text-neutral-400 uppercase tracking-wider leading-none mt-0.5">Your daily chanting journey</p>
+            <p className="text-[9px] font-bold text-neutral-400 uppercase tracking-wider leading-none mt-0.5">Click a date to update count</p>
           </div>
         </div>
 
@@ -202,15 +250,23 @@ export default function DashboardCalendar({ onStatsLoaded }: DashboardCalendarPr
               today.getMonth() === month - 1 && 
               today.getDate() === dateIndex;
 
+            const cellDate = new Date(year, month - 1, dateIndex);
+            const startOfTomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+            const isFuture = cellDate >= startOfTomorrow;
+
             // Render cell style matching mock-up
             return (
               <div 
                 key={i}
-                className={`aspect-square rounded-xl border p-1 flex flex-col justify-between transition-all duration-200 cursor-default relative group ${
-                  isTodayCell 
-                    ? "bg-saffron text-white border-saffron shadow-sm shadow-saffron/10" 
-                    : "bg-white border-[#F0EAE1] hover:bg-[#FAF8F5]/50"
+                onClick={() => !isFuture && handleCellClick(dateIndex)}
+                className={`aspect-square rounded-xl border p-1 flex flex-col justify-between transition-all duration-200 relative group ${
+                  isFuture
+                    ? "bg-white border-[#F0EAE1]/50 opacity-40 cursor-not-allowed"
+                    : isTodayCell 
+                      ? "bg-saffron text-white border-saffron shadow-sm shadow-saffron/10 cursor-pointer hover:scale-[1.03] active:scale-95" 
+                      : "bg-white border-[#F0EAE1] hover:bg-[#FAF8F5] hover:border-saffron/40 hover:shadow-xs cursor-pointer active:scale-95"
                 }`}
+                title={isFuture ? "Cannot edit future dates" : `Click to update chants for ${MONTHS[month-1]} ${dateIndex}, ${year}`}
               >
                 <div className="flex justify-between items-center w-full">
                   <span className={`text-[9px] font-bold ${
@@ -268,6 +324,22 @@ export default function DashboardCalendar({ onStatsLoaded }: DashboardCalendarPr
           <span>No Chanting</span>
         </div>
       </div>
+
+      {/* Update Chant Modal */}
+      {selectedDate && (
+        <UpdateChantModal
+          isOpen={!!selectedDate}
+          onClose={() => setSelectedDate(null)}
+          dateStr={selectedDate.dateStr}
+          displayDate={selectedDate.displayDate}
+          currentCount={selectedDate.count}
+          goal={selectedDate.goal}
+          onSuccess={() => {
+            fetchCalendarData(year, month);
+            router.refresh();
+          }}
+        />
+      )}
     </div>
   );
 }
